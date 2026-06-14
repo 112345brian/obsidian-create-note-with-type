@@ -1,0 +1,58 @@
+.note-type-creator-popover {
+  padding: 12px 14px;
+  min-width: 220px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-s);
+
+  .note-type-creator-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .note-type-creator-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-normal);
+  }
+
+  .note-type-creator-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .note-type-creator-key {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .note-type-creator-input {
+    flex: 1;
+    background: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-size: 13px;
+    color: var(--text-normal);
+    outline: none;
+    min-width: 0;
+
+    &:focus {
+      border-color: var(--interactive-accent);
+      box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+    }
+  }
+
+  .note-type-creator-hint {
+    font-size: 11px;
+    color: var(--text-faint);
+
+    &--confirm {
+      color: var(--color-accent);
+    }
+  }
+}

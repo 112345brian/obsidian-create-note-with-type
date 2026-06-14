@@ -1,0 +1,10 @@
+{
+  "author": "112345brian",
+  "authorUrl": "https://github.com/112345brian/",
+  "description": "Hover over a dead link to create the note with frontmatter fields pre-filled.",
+
+  "id": "create-note-with-type",
+  "isDesktopOnly": false,
+  "name": "Note Type Creator",
+  "version": "0.1.0"
+}
