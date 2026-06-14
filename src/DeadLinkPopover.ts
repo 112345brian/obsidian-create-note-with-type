@@ -1,6 +1,11 @@
-import type { App, WorkspaceLeaf } from 'obsidian';
+import type { App, EventRef, WorkspaceLeaf } from 'obsidian';
 
 import { normalizePath, TFile } from 'obsidian';
+
+interface UnresolvedLink {
+  el: HTMLElement;
+  linktext: string;
+}
 
 export class DeadLinkPopoverManager {
   private currentPopover: HTMLElement | null = null;
@@ -8,6 +13,7 @@ export class DeadLinkPopoverManager {
   private showTimer: number | null = null;
   private hoveredLeaf: WorkspaceLeaf | null = null;
   private leafListenerCleanups: (() => void)[] = [];
+  private workspaceEventRefs: EventRef[] = [];
 
   public constructor(
     private readonly app: App,
@@ -16,12 +22,19 @@ export class DeadLinkPopoverManager {
     private readonly getCommaList: () => boolean
   ) {
     this.app.workspace.onLayoutReady(() => { this.registerLeafTrackers(); });
-    this.app.workspace.on('layout-change', () => { this.registerLeafTrackers(); });
-    this.app.workspace.on('active-leaf-change', () => { this.dismissPopover(); });
+    this.workspaceEventRefs.push(
+      this.app.workspace.on('layout-change', () => { this.registerLeafTrackers(); }),
+      // Only dismiss when switching to another editor leaf, not sidebar panels
+      this.app.workspace.on('active-leaf-change', (leaf) => {
+        if (leaf?.view?.getViewType() === 'markdown') this.dismissPopover();
+      })
+    );
   }
 
   public stop(): void {
     this.dismissPopover();
+    for (const ref of this.workspaceEventRefs) this.app.workspace.offref(ref);
+    this.workspaceEventRefs = [];
     for (const cleanup of this.leafListenerCleanups) cleanup();
     this.leafListenerCleanups = [];
   }
@@ -66,19 +79,19 @@ export class DeadLinkPopoverManager {
       return;
     }
 
-    const anchor = this.findUnresolvedLinkElement(target);
-    if (!anchor) {
+    const link = this.findUnresolvedLinkElement(target);
+    if (!link) {
       this.scheduleHide();
       return;
     }
 
     this.cancelHide();
 
-    const linktext = anchor.dataset['linktext'] ?? '';
+    const { el, linktext } = link;
     if (this.currentPopover?.dataset['href'] === linktext) return;
 
     const sourcePath = this.getSourcePath();
-    const anchorRect = anchor.getBoundingClientRect();
+    const anchorRect = el.getBoundingClientRect();
     this.cancelShow();
     this.showTimer = window.setTimeout(() => {
       this.showTimer = null;
@@ -86,12 +99,12 @@ export class DeadLinkPopoverManager {
     }, 100);
   }
 
-  private findUnresolvedLinkElement(target: HTMLElement): HTMLElement | null {
+  private findUnresolvedLinkElement(target: HTMLElement): UnresolvedLink | null {
     // Reading view: <a class="internal-link is-unresolved">
     const readingLink = target.closest('a.internal-link.is-unresolved');
     if (readingLink instanceof HTMLElement) {
-      readingLink.dataset['linktext'] = readingLink.getAttribute('data-href') ?? readingLink.textContent ?? '';
-      return readingLink;
+      const linktext = readingLink.getAttribute('data-href') ?? readingLink.textContent ?? '';
+      return linktext ? { el: readingLink, linktext } : null;
     }
 
     // Live preview: <span class="cm-hmd-internal-link"> — no resolved/unresolved class,
@@ -105,8 +118,7 @@ export class DeadLinkPopoverManager {
       if (!linktext) return null;
       const resolved = this.app.metadataCache.getFirstLinkpathDest(linktext, this.getSourcePath());
       if (resolved) return null;
-      editorSpan.dataset['linktext'] = linktext;
-      return editorSpan;
+      return { el: editorSpan, linktext };
     }
 
     return null;
@@ -300,7 +312,11 @@ export class DeadLinkPopoverManager {
         const trimmed = raw.trim();
         if (!trimmed) return '';
         const existing = this.app.metadataCache.getFirstLinkpathDest(trimmed, sourcePath);
-        const name = existing ? existing.basename : trimmed;
+        // Use resolved basename when available; otherwise strip any path prefix so we
+        // don't write [[folder/Note]] when the cache hasn't indexed the new file yet
+        const name = existing
+          ? existing.basename
+          : trimmed.includes('/') ? trimmed.split('/').pop()! : trimmed;
         return shouldWikilink && !name.startsWith('[[') ? `[[${name}]]` : name;
       };
 

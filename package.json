@@ -1,6 +1,6 @@
 {
   "name": "create-note-with-type",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Hover over a dead link to create the note with frontmatter fields pre-filled.",
   "keywords": [],
   "license": "MIT",

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] - 2026-06-14
+
+### Fixed
+
+- Workspace event listeners (`layout-change`, `active-leaf-change`) are now properly deregistered via `offref` when the plugin unloads — previously they leaked and continued firing on the dead instance
+- `active-leaf-change` no longer dismisses the popover when the user focuses a sidebar panel (file explorer, tags, etc.) — only switching to another markdown editor leaf dismisses it
+- `findUnresolvedLinkElement` no longer writes `data-linktext` onto CodeMirror-owned DOM spans — the linktext is returned as a value instead of a side-effect mutation
+- Frontmatter wikilink values for path-prefixed links (e.g. `folder/Note`) now write the bare basename `[[Note]]` instead of `[[folder/Note]]` when the metadata cache hasn't indexed the new file yet
+
 ## [0.1.0] - 2026-06-14
 
 ### Added
