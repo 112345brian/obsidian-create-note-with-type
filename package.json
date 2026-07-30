@@ -1,6 +1,6 @@
 {
   "name": "create-note-with-type",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Hover over a dead link to create the note with frontmatter fields pre-filled.",
   "keywords": [],
   "license": "MIT",
@@ -32,9 +32,9 @@
     "@types/react-dom": "latest",
     "jiti": "latest",
     "moment": "2.29.4",
-    "obsidian": "latest",
-    "obsidian-dev-utils": "latest",
-    "obsidian-typings": "obsidian-public-latest",
+    "obsidian": "^1.13.1",
+    "obsidian-dev-utils": "^46.17.1",
+    "obsidian-typings": "^5.22.0",
     "react": "latest",
     "react-dom": "latest",
     "svelte": "latest"
